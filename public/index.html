@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp AI Bot - Panel de Control</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .status-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border-left: 5px solid #25d366;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ff4757;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-dot.connected {
+            background: #25d366;
+        }
+        
+        .status-dot.connecting {
+            background: #ffa502;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .qr-section {
+            text-align: center;
+            padding: 30px;
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .qr-code {
+            max-width: 300px;
+            max-height: 300px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .qr-code img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+        
+        .instructions {
+            background: #e8f5e8;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+        
+        .instructions h3 {
+            color: #128c7e;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .instructions ol {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-top: 4px solid #25d366;
+        }
+        
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #25d366;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 1.1em;
+            color: #666;
+        }
+        
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #25d366;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #c33;
+        }
+        
+        .success-message {
+            background: #efe;
+            color: #363;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #363;
+        }
+        
+        button {
+            background: #25d366;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+        
+        button:hover {
+            background: #128c7e;
+            transform: translateY(-2px);
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .send-message-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            border-left: 5px solid #25d366;
+        }
+        
+        .send-message-section h2 {
+            color: #25d366;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+        
+        .message-form {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #25d366;
+            box-shadow: 0 0 10px rgba(37, 211, 102, 0.2);
+        }
+        
+        .form-group small {
+            display: block;
+            margin-top: 5px;
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 25px;
+        }
+        
+        .send-button {
+            background: #25d366;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            max-width: 200px;
+        }
+        
+        .send-button:hover:not(:disabled) {
+            background: #128c7e;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(37, 211, 102, 0.3);
+        }
+        
+        .send-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .clear-button {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            max-width: 150px;
+        }
+        
+        .clear-button:hover {
+            background: #d32f2f;
+            transform: translateY(-2px);
+        }
+        
+        .send-result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .send-result.success {
+            background: #e8f5e8;
+            color: #2e7d32;
+            border: 1px solid #4caf50;
+        }
+        
+        .send-result.error {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #f44336;
+        }
+        
+        .send-result.loading {
+            background: #fff3e0;
+            color: #f57c00;
+            border: 1px solid #ff9800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 WhatsApp AI Bot</h1>
+            <p>Panel de Control y Configuración</p>
+        </div>
+        
+        <div class="content">
+            <div class="status-card">
+                <div class="status-indicator">
+                    <div class="status-dot" id="statusDot"></div>
+                    <strong id="statusText">Conectando...</strong>
+                </div>
+                <p id="statusDescription">Iniciando el bot y generando código QR...</p>
+            </div>
+            
+            <div class="qr-section" id="qrSection">
+                <h2>📱 Conectar WhatsApp</h2>
+                <div id="qrContainer">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <span>Generando código QR...</span>
+                    </div>
+                </div>
+                
+                <div class="instructions">
+                    <h3>📋 Instrucciones</h3>
+                    <ol>
+                        <li>Abre WhatsApp en tu teléfono</li>
+                        <li>Ve a <strong>Menú</strong> → <strong>Dispositivos vinculados</strong></li>
+                        <li>Toca <strong>Vincular un dispositivo</strong></li>
+                        <li>Escanea el código QR que aparece arriba</li>
+                        <li>¡Listo! El bot comenzará a funcionar automáticamente</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="messagesCount">0</div>
+                    <div class="stat-label">Mensajes Procesados</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="conversationsCount">0</div>
+                    <div class="stat-label">Conversaciones Activas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="uptimeDisplay">00:00</div>
+                    <div class="stat-label">Tiempo Activo</div>
+                </div>
+            </div>
+            
+            <!-- Sección para enviar mensajes -->
+            <div class="send-message-section" id="sendMessageSection">
+                <h2>📤 Enviar Mensaje de Prueba</h2>
+                <div class="message-form">
+                    <div class="form-group">
+                        <label for="phoneNumber">📞 Número de WhatsApp</label>
+                        <input type="tel" id="phoneNumber" placeholder="Ej: +57xxxxxxxxx o 57xxxxxxxxx" maxlength="20">
+                        <small>Incluye el código de país (ej: +57 para Colombia)</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="messageText">💬 Mensaje</label>
+                        <textarea id="messageText" rows="4" placeholder="Escribe tu mensaje aquí..." maxlength="1000"></textarea>
+                        <small id="charCount">0/1000 caracteres</small>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button onclick="sendTestMessage()" id="sendBtn" class="send-button">
+                            📤 Enviar Mensaje
+                        </button>
+                        <button onclick="clearForm()" class="clear-button">
+                            🗑️ Limpiar
+                        </button>
+                    </div>
+                    
+                    <div id="sendResult"></div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button onclick="refreshQR()" id="refreshBtn">🔄 Actualizar QR</button>
+                <button onclick="toggleAutoResponse()" id="toggleBtn">🤖 Toggle Auto-Respuesta</button>
+                <button onclick="showLogs()" id="logsBtn">📋 Ver Registros</button>
+            </div>
+            
+            <div id="autoResponseStatus" style="text-align: center; margin-top: 15px; padding: 10px; background: #e8f5e8; border-radius: 10px;">
+                <strong>Estado de Respuestas Automáticas: </strong>
+                <span id="autoResponseState" style="color: #25d366;">ACTIVADAS</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let startTime = Date.now();
+        let isConnected = false;
+        let stats = { messages: 0, conversations: 0 };
+        
+        // Actualizar estado cada segundo
+        setInterval(updateUI, 1000);
+        
+        // Intentar obtener QR cada 5 segundos si no está conectado
+        setInterval(fetchQRCode, 5000);
+        
+        // Cargar QR inicial
+        fetchQRCode();
+        
+        function updateUI() {
+            updateUptime();
+            updateStats();
+        }
+        
+        function updateUptime() {
+            const uptime = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(uptime / 60);
+            const seconds = uptime % 60;
+            document.getElementById('uptimeDisplay').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        async function fetchQRCode() {
+            if (isConnected) return;
+            
+            try {
+                const response = await fetch('/api/qr');
+                const data = await response.json();
+                
+                console.log('QR Response:', data); // Debug log
+                
+                if (data.success && data.qr) {
+                    showQRCode(data.qr);
+                } else if (data.connected) {
+                    showConnected();
+                } else if (data.error) {
+                    showError(data.error);
+                } else {
+                    // Si no hay QR disponible, mostrar mensaje informativo
+                    console.log('No QR available yet:', data);
+                }
+            } catch (error) {
+                console.log('Error fetching QR:', error);
+            }
+        }
+        
+        function showQRCode(qrData) {
+            const container = document.getElementById('qrContainer');
+            container.innerHTML = `
+                <div class="qr-code">
+                    <img src="data:image/png;base64,${qrData}" alt="Código QR de WhatsApp" />
+                </div>
+                <p>Escanea este código con WhatsApp</p>
+            `;
+            
+            updateStatus('connecting', 'Esperando escaneo', 'Escanea el código QR con tu WhatsApp');
+        }
+        
+        function showConnected() {
+            isConnected = true;
+            document.getElementById('qrContainer').innerHTML = `
+                <div class="success-message">
+                    <h3>✅ ¡Conectado exitosamente!</h3>
+                    <p>El bot está funcionando y listo para recibir mensajes.</p>
+                </div>
+            `;
+            updateStatus('connected', '¡Conectado!', 'El bot está funcionando correctamente');
+            
+            // Mostrar sección de envío de mensajes cuando esté conectado
+            document.getElementById('sendMessageSection').style.display = 'block';
+        }
+        
+        function showError(error) {
+            document.getElementById('qrContainer').innerHTML = `
+                <div class="error-message">
+                    <h3>❌ Error de conexión</h3>
+                    <p>${error}</p>
+                    <button onclick="refreshQR()">Reintentar</button>
+                </div>
+            `;
+            updateStatus('disconnected', 'Error', error);
+        }
+        
+        function updateStatus(status, text, description) {
+            const dot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            const statusDesc = document.getElementById('statusDescription');
+            
+            dot.className = `status-dot ${status}`;
+            statusText.textContent = text;
+            statusDesc.textContent = description;
+        }
+        
+        async function updateStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('messagesCount').textContent = data.stats.messages || 0;
+                    document.getElementById('conversationsCount').textContent = data.stats.conversations || 0;
+                }
+            } catch (error) {
+                console.log('Error fetching stats:', error);
+            }
+        }
+        
+        async function refreshQR() {
+            const btn = document.getElementById('refreshBtn');
+            btn.disabled = true;
+            btn.textContent = '🔄 Actualizando...';
+            
+            document.getElementById('qrContainer').innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <span>Generando nuevo código QR...</span>
+                </div>
+            `;
+            
+            try {
+                await fetch('/api/refresh-qr', { method: 'POST' });
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                await fetchQRCode();
+            } catch (error) {
+                showError('Error al generar nuevo código QR');
+            }
+            
+            btn.disabled = false;
+            btn.textContent = '🔄 Actualizar QR';
+        }
+        
+        function showLogs() {
+            window.open('/api/logs', '_blank');
+        }
+        
+        async function toggleAutoResponse() {
+            try {
+                const response = await fetch('/api/toggle-auto-response', { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.success) {
+                    const stateElement = document.getElementById('autoResponseState');
+                    const statusDiv = document.getElementById('autoResponseStatus');
+                    
+                    if (data.autoResponseEnabled) {
+                        stateElement.textContent = 'ACTIVADAS';
+                        stateElement.style.color = '#25d366';
+                        statusDiv.style.background = '#e8f5e8';
+                    } else {
+                        stateElement.textContent = 'DESACTIVADAS';
+                        stateElement.style.color = '#ff4757';
+                        statusDiv.style.background = '#fee';
+                    }
+                    
+                    console.log('Auto-respuesta:', data.message);
+                }
+            } catch (error) {
+                console.error('Error toggling auto-response:', error);
+            }
+        }
+        
+        // Detectar reconexión
+        window.addEventListener('online', () => {
+            fetchQRCode();
+        });
+        
+        // Funciones para el formulario de envío de mensajes
+        document.addEventListener('DOMContentLoaded', () => {
+            const messageTextarea = document.getElementById('messageText');
+            const charCount = document.getElementById('charCount');
+            
+            if (messageTextarea && charCount) {
+                messageTextarea.addEventListener('input', () => {
+                    const count = messageTextarea.value.length;
+                    charCount.textContent = `${count}/1000 caracteres`;
+                    charCount.style.color = count > 900 ? '#f44336' : '#666';
+                });
+            }
+        });
+        
+        async function sendTestMessage() {
+            // Permitir envío de prueba incluso sin conexión para testing
+            if (!isConnected) {
+                showSendResult('error', '⚠️ Advertencia: El bot no está conectado a WhatsApp. Se intentará enviar de todas formas.');
+                // return; // Comentado para permitir pruebas
+            }
+            
+            const phoneNumber = document.getElementById('phoneNumber').value.trim();
+            const messageText = document.getElementById('messageText').value.trim();
+            const sendBtn = document.getElementById('sendBtn');
+            const resultDiv = document.getElementById('sendResult');
+            
+            // Validaciones
+            if (!phoneNumber) {
+                showSendResult('error', '❌ Por favor ingresa un número de WhatsApp');
+                return;
+            }
+            
+            if (!messageText) {
+                showSendResult('error', '❌ Por favor escribe un mensaje');
+                return;
+            }
+            
+            // Formatear número de teléfono
+            let formattedNumber = phoneNumber.replace(/\s+/g, '');
+            if (!formattedNumber.startsWith('+')) {
+                formattedNumber = '+' + formattedNumber;
+            }
+            
+            // Validar formato básico
+            if (!/^\+\d{10,15}$/.test(formattedNumber)) {
+                showSendResult('error', '❌ El número no tiene un formato válido. Usa: +país + número');
+                return;
+            }
+            
+            // Mostrar estado de carga
+            sendBtn.disabled = true;
+            sendBtn.textContent = '📤 Enviando...';
+            showSendResult('loading', '⏳ Enviando mensaje...');
+            
+            try {
+                const response = await fetch('/api/send-message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        phoneNumber: formattedNumber,
+                        message: messageText
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showSendResult('success', `✅ Mensaje enviado exitosamente a ${formattedNumber}`);
+                    // Limpiar formulario después del éxito
+                    setTimeout(() => {
+                        clearForm();
+                    }, 3000);
+                } else {
+                    showSendResult('error', `❌ Error: ${result.error || 'No se pudo enviar el mensaje'}`);
+                }
+                
+            } catch (error) {
+                console.error('Error sending message:', error);
+                showSendResult('error', '❌ Error de conexión. Verifica tu conexión a internet.');
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.textContent = '📤 Enviar Mensaje';
+            }
+        }
+        
+        function showSendResult(type, message) {
+            const resultDiv = document.getElementById('sendResult');
+            resultDiv.className = `send-result ${type}`;
+            resultDiv.innerHTML = `
+                <strong>${message}</strong>
+                ${type === 'loading' ? '<div class="spinner" style="display: inline-block; margin-left: 10px;"></div>' : ''}
+            `;
+            resultDiv.style.display = 'block';
+            
+            // Auto-hide después de 10 segundos (excepto loading)
+            if (type !== 'loading') {
+                setTimeout(() => {
+                    resultDiv.style.display = 'none';
+                }, 10000);
+            }
+        }
+        
+        function clearForm() {
+            document.getElementById('phoneNumber').value = '';
+            document.getElementById('messageText').value = '';
+            document.getElementById('charCount').textContent = '0/1000 caracteres';
+            document.getElementById('charCount').style.color = '#666';
+            document.getElementById('sendResult').style.display = 'none';
+        }
+        
+        function formatPhoneNumber(input) {
+            // Auto-formatear número mientras se escribe
+            let value = input.value.replace(/\D/g, '');
+            if (value.length > 0 && !value.startsWith('+')) {
+                value = '+' + value;
+            }
+            input.value = value;
+        }
+    </script>
+</body>
+</html>

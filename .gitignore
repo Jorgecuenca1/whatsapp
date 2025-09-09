@@ -1,0 +1,8 @@
+node_modules/
+auth_info/
+.env
+.env.local
+*.log
+.DS_Store
+nul
+conversations.json
